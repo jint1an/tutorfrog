@@ -1,0 +1,3100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TutorFrog // Student Command & Tutoring Manager</title>
+  <style>
+    /* ==========================================================================
+       1. CSS VARIABLES & RETRO PERSONA / DEADLOCK THEME TOKENS
+       ========================================================================== */
+    :root {
+      --bg-void: #090c0d;
+      --bg-primary: #0f1416;
+      --bg-surface: #171e21;
+      --bg-elevated: #20292d;
+      --bg-hover: #283439;
+
+      --border-hard: #2c393f;
+      --border-bright: #43555d;
+      --border-dark: #000000;
+
+      --accent-frog: #00ff7f;
+      --accent-frog-dim: #00cc66;
+      --accent-frog-glow: rgba(0, 255, 127, 0.2);
+      --accent-frog-subtle: rgba(0, 255, 127, 0.08);
+
+      --accent-crimson: #ff3b5c;
+      --accent-crimson-dim: rgba(255, 59, 92, 0.18);
+      --accent-amber: #ffb800;
+      --accent-amber-dim: rgba(255, 184, 0, 0.18);
+      --accent-cyan: #00e5ff;
+      --accent-cyan-dim: rgba(0, 229, 255, 0.18);
+
+      --text-primary: #f5f8f7;
+      --text-secondary: #c2cfd2;
+      --text-muted: #798c92;
+      --text-inverse: #090c0d;
+
+      --font-display: 'Impact', 'Trebuchet MS', -apple-system, sans-serif;
+      --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+      --shadow-hard: 4px 4px 0px #000000;
+      --shadow-hard-sm: 2px 2px 0px #000000;
+      --shadow-hard-accent: 4px 4px 0px var(--accent-frog);
+      --shadow-hard-crimson: 4px 4px 0px var(--accent-crimson);
+
+      --radius-sm: 2px;
+      --radius-md: 4px;
+      --transition-fast: 120ms ease;
+    }
+
+    /* ==========================================================================
+       2. RESET & BASE ELEMENTS
+       ========================================================================== */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      background-color: var(--bg-void);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      background-image:
+        radial-gradient(circle at 100% 0%, rgba(0, 255, 127, 0.04) 0%, transparent 40%),
+        radial-gradient(circle at 0% 100%, rgba(0, 229, 255, 0.03) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    a {
+      color: var(--accent-frog);
+      text-decoration: none;
+      transition: color var(--transition-fast);
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-void);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-hard);
+      border: 1px solid var(--border-dark);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-frog-dim);
+    }
+
+    /* ==========================================================================
+       3. TYPOGRAPHY & STYLIZED PERSONA / RETRO ACCENTS
+       ========================================================================== */
+    .title-display {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.1;
+    }
+
+    .badge-stamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 3px 8px;
+      border: 1px solid currentColor;
+      box-shadow: var(--shadow-hard-sm);
+      transform: rotate(-1deg);
+      user-select: none;
+    }
+
+    .badge-stamp.status-scheduled {
+      color: var(--accent-cyan);
+      background: var(--accent-cyan-dim);
+      border-color: var(--accent-cyan);
+    }
+
+    .badge-stamp.status-completed {
+      color: var(--accent-frog);
+      background: var(--accent-frog-subtle);
+      border-color: var(--accent-frog);
+    }
+
+    .badge-stamp.status-cancelled {
+      color: var(--accent-crimson);
+      background: var(--accent-crimson-dim);
+      border-color: var(--accent-crimson);
+    }
+
+    .badge-stamp.status-unpaid {
+      color: var(--accent-amber);
+      background: var(--accent-amber-dim);
+      border-color: var(--accent-amber);
+    }
+
+    .badge-stamp.status-paid {
+      color: var(--accent-frog);
+      background: var(--accent-frog-subtle);
+      border-color: var(--accent-frog);
+    }
+
+    /* ==========================================================================
+       4. BUTTONS & INTERACTIVE ELEMENTS (NEO-BRUTAL RETRO)
+       ========================================================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 2px solid var(--border-dark);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      cursor: pointer;
+      box-shadow: var(--shadow-hard);
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-bright);
+    }
+
+    .btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    .btn-primary {
+      background: var(--accent-frog);
+      color: var(--text-inverse);
+      border-color: var(--border-dark);
+      box-shadow: 4px 4px 0px #000000;
+      font-weight: 800;
+    }
+
+    .btn-primary:hover {
+      background: #22ff8f;
+      border-color: #000000;
+    }
+
+    .btn-danger {
+      background: var(--accent-crimson);
+      color: #ffffff;
+      border-color: var(--border-dark);
+    }
+
+    .btn-danger:hover {
+      background: #ff5270;
+    }
+
+    .btn-sm {
+      padding: 4px 8px;
+      font-size: 11px;
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    .btn-sm:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px #000000;
+    }
+
+    .btn-icon {
+      padding: 6px 10px;
+    }
+
+    /* ==========================================================================
+       5. APP SHELL: HEADER, NAV, LAYOUT
+       ========================================================================== */
+    .app-header {
+      background: var(--bg-primary);
+      border-bottom: 2px solid var(--border-hard);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mascot {
+      width: 40px;
+      height: 40px;
+      background: var(--accent-frog);
+      color: var(--text-inverse);
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      border: 2px solid var(--border-dark);
+      box-shadow: var(--shadow-hard-sm);
+      transform: rotate(-3deg);
+    }
+
+    .brand-title {
+      font-size: 22px;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .brand-subtitle {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--accent-frog);
+      letter-spacing: 0.5px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .app-nav {
+      background: var(--bg-surface);
+      border-bottom: 2px solid var(--border-hard);
+      padding: 4px 16px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .nav-item {
+      padding: 8px 14px;
+      font-family: var(--font-display);
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all var(--transition-fast);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-item:hover {
+      color: var(--text-primary);
+      background: var(--bg-hover);
+    }
+
+    .nav-item.active {
+      color: var(--accent-frog);
+      border-bottom-color: var(--accent-frog);
+      background: var(--bg-elevated);
+    }
+
+    .app-main {
+      flex: 1;
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+    }
+
+    .app-view {
+      display: none;
+      animation: fadeIn 180ms ease forwards;
+    }
+
+    .app-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==========================================================================
+       6. CARDS & CONTAINERS (RETRO ANGULAR)
+       ========================================================================== */
+    .retro-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-hard);
+      box-shadow: var(--shadow-hard);
+      padding: 18px;
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .retro-card-accent {
+      border-color: var(--accent-frog);
+      box-shadow: 4px 4px 0px rgba(0, 255, 127, 0.4);
+    }
+
+    .retro-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--border-hard);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .retro-card-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .metric-box {
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-hard);
+      padding: 14px;
+      box-shadow: var(--shadow-hard-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-box::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 16px;
+      height: 16px;
+      background: var(--border-hard);
+      clip-path: polygon(100% 0, 0 0, 100% 100%);
+    }
+
+    .metric-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .metric-value {
+      font-family: var(--font-display);
+      font-size: 26px;
+      color: var(--accent-frog);
+      line-height: 1.1;
+    }
+
+    /* ==========================================================================
+       7. SCHEDULE & CALENDAR (HYBRID DESKTOP GRID / MOBILE AGENDA)
+       ========================================================================== */
+    .schedule-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+      background: var(--bg-surface);
+      padding: 10px 14px;
+      border: 2px solid var(--border-hard);
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    .schedule-week-display {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+
+    /* Mobile Day Picker Pills */
+    .day-pills-container {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 14px;
+    }
+
+    .day-pill {
+      flex: 1;
+      min-width: 58px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-hard);
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      box-shadow: var(--shadow-hard-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      user-select: none;
+    }
+
+    .day-pill.active {
+      border-color: var(--accent-frog);
+      background: var(--bg-elevated);
+      color: var(--accent-frog);
+    }
+
+    .day-pill-name {
+      font-family: var(--font-display);
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .day-pill-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .day-pill.active .day-pill-date {
+      color: var(--text-primary);
+    }
+
+    /* Weekly Visual Grid on Desktop */
+    .weekly-grid {
+      display: none;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    @media (min-width: 900px) {
+      .weekly-grid {
+        display: grid;
+      }
+
+      .mobile-agenda-view {
+        display: none;
+      }
+
+      .day-pills-container {
+        display: none;
+      }
+    }
+
+    @media (max-width: 899px) {
+      .weekly-grid {
+        display: none;
+      }
+
+      .mobile-agenda-view {
+        display: block;
+      }
+
+      .day-pills-container {
+        display: flex;
+      }
+    }
+
+    .grid-day-column {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-hard);
+      min-height: 480px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .grid-day-column.today {
+      border-color: var(--accent-frog);
+    }
+
+    .grid-day-header {
+      background: var(--bg-elevated);
+      padding: 8px;
+      border-bottom: 2px solid var(--border-hard);
+      text-align: center;
+    }
+
+    .grid-day-name {
+      font-family: var(--font-display);
+      font-size: 14px;
+      text-transform: uppercase;
+    }
+
+    .grid-day-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .grid-day-column.today .grid-day-date {
+      color: var(--accent-frog);
+      font-weight: 700;
+    }
+
+    .grid-day-events {
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+
+    /* Session Event Item */
+    .session-item {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-hard);
+      border-left: 4px solid var(--accent-frog);
+      padding: 8px 10px;
+      box-shadow: var(--shadow-hard-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+    }
+
+    .session-item.status-completed {
+      border-left-color: var(--accent-frog);
+      background: rgba(0, 255, 127, 0.04);
+    }
+
+    .session-item.status-cancelled {
+      border-left-color: var(--accent-crimson);
+      opacity: 0.7;
+    }
+
+    .session-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent-frog);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .session-student {
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .session-subject {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .session-actions {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================================
+       8. STUDENTS DOSSIER & CRM
+       ========================================================================== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-hard);
+      padding: 8px 12px;
+      color: var(--text-primary);
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-frog);
+    }
+
+    .student-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+    }
+
+    .student-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-hard);
+      box-shadow: var(--shadow-hard);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+    }
+
+    .student-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .student-name {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+
+    .student-school {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .student-meta-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .student-meta-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed var(--border-hard);
+      padding-bottom: 2px;
+    }
+
+    .student-meta-item .meta-label {
+      color: var(--text-muted);
+    }
+
+    .student-meta-item .meta-value {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
+
+    .student-contact-links {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    /* ==========================================================================
+       9. INVOICING & BILLING
+       ========================================================================== */
+    .invoice-table-wrapper {
+      overflow-x: auto;
+      border: 2px solid var(--border-hard);
+      box-shadow: var(--shadow-hard);
+      background: var(--bg-surface);
+    }
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .invoice-table th {
+      background: var(--bg-elevated);
+      padding: 10px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--border-hard);
+      color: var(--text-muted);
+    }
+
+    .invoice-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-hard);
+    }
+
+    .invoice-table tr:hover {
+      background: var(--bg-hover);
+    }
+
+    /* ==========================================================================
+       10. MODALS & DIALOGS
+       ========================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(2px);
+      display: none;
+      place-items: center;
+      z-index: 1000;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.active {
+      display: grid;
+    }
+
+    .modal-content {
+      background: var(--bg-surface);
+      border: 3px solid var(--border-dark);
+      box-shadow: 8px 8px 0px #000000;
+      width: 100%;
+      max-width: 580px;
+      padding: 20px;
+      position: relative;
+      animation: modalSlide 180ms ease forwards;
+    }
+
+    @keyframes modalSlide {
+      from {
+        transform: translateY(16px) scale(0.98);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--border-hard);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: var(--text-muted);
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+    }
+
+    .modal-close:hover {
+      color: var(--accent-crimson);
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 2px solid var(--border-hard);
+      padding: 8px 10px;
+      color: var(--text-primary);
+      box-shadow: var(--shadow-hard-sm);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-frog);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 500px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Toast Container */
+    .toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 2000;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-dark);
+      border-left: 6px solid var(--accent-frog);
+      color: var(--text-primary);
+      padding: 10px 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      box-shadow: var(--shadow-hard);
+      animation: toastIn 180ms ease forwards;
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.error {
+      border-left-color: var(--accent-crimson);
+    }
+
+    @keyframes toastIn {
+      from {
+        transform: translateX(40px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* ==========================================================================
+       11. PRINT STYLESHEET (@media print) FOR CLEAN INVOICE / REPORT OUTPUT
+       ========================================================================== */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 12pt;
+      }
+
+      .app-header,
+      .app-nav,
+      .schedule-toolbar,
+      .btn,
+      .search-input,
+      .modal-backdrop,
+      .toast-container,
+      .brand-cluster .btn {
+        display: none !important;
+      }
+
+      .app-main {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .retro-card {
+        border: 1px solid #cccccc !important;
+        box-shadow: none !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        page-break-inside: avoid;
+      }
+
+      .printable-invoice-container {
+        display: block !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       APP HEADER / TOP COMMAND BAR
+       ========================================================================== -->
+  <header class="app-header">
+    <div class="brand-cluster">
+      <div class="brand-mascot" aria-hidden="true">🐸</div>
+      <div>
+        <h1 class="brand-title title-display">TutorFrog</h1>
+        <div class="brand-subtitle">v0.1.0 // TUTOR COMMAND CENTER</div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-sm" id="btn-toggle-demo" data-action="toggle-demo"
+        title="Seed or reset realistic sample data">
+        🎲 Demo Data
+      </button>
+      <button class="btn btn-sm" id="btn-add-session-quick" data-action="open-session-modal">
+        + New Session
+      </button>
+      <button class="btn btn-sm btn-primary" id="btn-add-student-quick" data-action="open-student-modal">
+        + Add Student
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       APP NAVIGATION TABS
+       ========================================================================== -->
+  <nav class="app-nav" aria-label="Main Navigation">
+    <button class="nav-item active" data-tab="dashboard">⚡ Dashboard</button>
+    <button class="nav-item" data-tab="schedule">📅 Schedule</button>
+    <button class="nav-item" data-tab="students">🎓 Students CRM</button>
+    <button class="nav-item" data-tab="invoices">💰 Invoices & Billing</button>
+    <button class="nav-item" data-tab="settings">⚙️ Settings & Backup</button>
+  </nav>
+
+  <!-- ==========================================================================
+       MAIN VIEWS
+       ========================================================================== -->
+  <main class="app-main">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard" class="app-view active" aria-labelledby="dash-heading">
+      <div class="metric-grid">
+        <div class="metric-box">
+          <span class="metric-label">Active Students</span>
+          <span class="metric-value" id="stat-active-students">0</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Lessons This Week</span>
+          <span class="metric-value" id="stat-lessons-week">0</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Hours Taught (MTD)</span>
+          <span class="metric-value" id="stat-hours-taught">0h</span>
+        </div>
+        <div class="metric-box">
+          <span class="metric-label">Unbilled Completed</span>
+          <span class="metric-value" id="stat-unbilled-amount">$0</span>
+        </div>
+      </div>
+
+      <div class="retro-card">
+        <div class="retro-card-header">
+          <h2 class="retro-card-title" id="dash-heading">🎯 Today's Sessions & Action Items</h2>
+          <button class="btn btn-sm" data-action="open-session-modal">+ Schedule Session</button>
+        </div>
+        <div id="dashboard-today-list">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+
+      <div class="retro-card">
+        <div class="retro-card-header">
+          <h2 class="retro-card-title">⚠️ Outstanding Unpaid Invoices</h2>
+          <button class="btn btn-sm" data-action="goto-invoices">View All Invoices</button>
+        </div>
+        <div id="dashboard-unpaid-invoices">
+          <!-- Rendered via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. SCHEDULE VIEW -->
+    <section id="view-schedule" class="app-view" aria-labelledby="schedule-heading">
+      <div class="schedule-toolbar">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn btn-sm" id="btn-prev-week" data-action="prev-week">◀ Prev</button>
+          <button class="btn btn-sm" id="btn-today-week" data-action="today-week">Current Week</button>
+          <button class="btn btn-sm" id="btn-next-week" data-action="next-week">Next ▶</button>
+        </div>
+        <span class="schedule-week-display" id="schedule-week-label">Week Range</span>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-sm" id="btn-populate-week" data-action="populate-week"
+            title="Generate sessions from recurring weekly templates">
+            ⚡ Roll Out Templates
+          </button>
+          <button class="btn btn-sm btn-primary" data-action="open-session-modal">+ Session</button>
+        </div>
+      </div>
+
+      <!-- Mobile Day Pills -->
+      <div class="day-pills-container" id="schedule-day-pills">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Desktop Weekly Grid -->
+      <div class="weekly-grid" id="desktop-weekly-grid">
+        <!-- 7 Days Rendered via JS -->
+      </div>
+
+      <!-- Mobile Agenda Single Day View -->
+      <div class="mobile-agenda-view" id="mobile-agenda-view">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- 3. STUDENTS CRM VIEW -->
+    <section id="view-students" class="app-view" aria-labelledby="students-heading">
+      <div class="filter-bar">
+        <input type="text" id="students-search" class="search-input"
+          placeholder="Search student name, school, curriculum, or subject...">
+        <select id="students-status-filter" class="search-input" style="flex: 0 0 160px;">
+          <option value="ALL">All Statuses</option>
+          <option value="Active" selected>Active Only</option>
+          <option value="Paused">Paused</option>
+          <option value="Archived">Archived</option>
+        </select>
+        <button class="btn btn-primary" data-action="open-student-modal">+ Add Student</button>
+      </div>
+
+      <div class="student-grid" id="students-container">
+        <!-- Student cards rendered via JS -->
+      </div>
+    </section>
+
+    <!-- 4. INVOICES & BILLING VIEW -->
+    <section id="view-invoices" class="app-view" aria-labelledby="invoices-heading">
+      <div class="retro-card">
+        <div class="retro-card-header">
+          <h2 class="retro-card-title" id="invoices-heading">💵 Generate New Invoice</h2>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+          <div style="flex: 1; min-width: 220px;">
+            <label class="form-label" for="invoice-student-select">Student with Unbilled Sessions</label>
+            <select id="invoice-student-select" class="form-control">
+              <!-- Rendered via JS -->
+            </select>
+          </div>
+          <button class="btn btn-primary" id="btn-create-invoice" data-action="generate-invoice">
+            Generate Invoice
+          </button>
+        </div>
+      </div>
+
+      <div class="retro-card">
+        <div class="retro-card-header">
+          <h2 class="retro-card-title">📜 Invoicing Ledger</h2>
+        </div>
+        <div class="invoice-table-wrapper">
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>Invoice #</th>
+                <th>Student</th>
+                <th>Issue Date</th>
+                <th>Sessions</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="invoices-table-body">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. SETTINGS & DATA PORTABILITY VIEW -->
+    <section id="view-settings" class="app-view" aria-labelledby="settings-heading">
+      <div class="retro-card">
+        <div class="retro-card-header">
+          <h2 class="retro-card-title" id="settings-heading">⚙️ Tutor Profile & Billing Settings</h2>
+        </div>
+        <form id="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="setting-tutor-name">Tutor Full Name</label>
+              <input type="text" id="setting-tutor-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setting-business-name">Business / Brand Name</label>
+              <input type="text" id="setting-business-name" class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="setting-email">Contact Email</label>
+              <input type="email" id="setting-email" class="form-control">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setting-phone">Contact Phone / WhatsApp</label>
+              <input type="tel" id="setting-phone" class="form-control">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="setting-currency">Currency Symbol</label>
+              <input type="text" id="setting-currency" class="form-control" style="width: 100px;" value="$" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="setting-default-rate">Default Hourly Rate</label>
+              <input type="number" id="setting-default-rate" class="form-control" style="width: 160px;" min="0" step="1"
+                required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="setting-payment-instructions">Payment Instructions (Shown on
+              Invoices)</label>
+            <textarea id="setting-payment-instructions" class="form-control" rows="3"
+              placeholder="e.g. Bank: BSB 123-456 Acc 78901234 | Venmo: @MyTutorHandle"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Settings</button>
+        </form>
+      </div>
+
+      <div class="retro-card">
+        <div class="retro-card-header">
+          <h2 class="retro-card-title">💾 Data Backup & Portability (LocalStorage SKILL)</h2>
+        </div>
+        <p style="color: var(--text-muted); margin-bottom: 14px; font-size: 13px;">
+          TutorFrog stores all records client-side in browser LocalStorage. Export regular backups to prevent accidental
+          browser cache clearing.
+        </p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn" id="btn-export-json" data-action="export-json">📥 Download Backup (JSON)</button>
+          <label class="btn" style="cursor: pointer;">
+            📤 Restore Backup (JSON)
+            <input type="file" id="input-import-json" accept=".json" style="display: none;">
+          </label>
+          <button class="btn" id="btn-export-csv-sessions" data-action="export-csv-sessions">📊 Export Sessions
+            (CSV)</button>
+          <button class="btn" id="btn-export-csv-students" data-action="export-csv-students">👥 Export Students
+            (CSV)</button>
+          <button class="btn btn-danger" id="btn-wipe-data" data-action="wipe-data">⚠️ Wipe All Data</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================================
+       MODALS: STUDENT FORM, SESSION FORM, NOTES, SHARE, INVOICE PRINT
+       ========================================================================== -->
+
+  <!-- Student Form Modal -->
+  <div class="modal-backdrop" id="modal-student" role="dialog" aria-modal="true" aria-labelledby="modal-student-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-student-title">Student Profile Dossier</h3>
+        <button class="modal-close" data-action="close-modal" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-student">
+        <input type="hidden" id="student-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="student-name">Student Full Name *</label>
+            <input type="text" id="student-name" class="form-control" required placeholder="e.g. Maya Lin">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="student-status">Status</label>
+            <select id="student-status" class="form-control">
+              <option value="Active">Active</option>
+              <option value="Paused">Paused</option>
+              <option value="Archived">Archived</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="student-grade">Grade / Year Level</label>
+            <input type="text" id="student-grade" class="form-control" placeholder="e.g. Year 11 / Grade 10">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="student-school">School Name</label>
+            <input type="text" id="student-school" class="form-control" placeholder="e.g. St. Jude High">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="student-curriculum">Curriculum / Board</label>
+            <input type="text" id="student-curriculum" class="form-control"
+              placeholder="e.g. IB Diploma, AP, GCSE, HSC">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="student-rate">Hourly Rate ($)</label>
+            <input type="number" id="student-rate" class="form-control" min="0" step="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="student-subjects">Primary Subjects (comma separated)</label>
+          <input type="text" id="student-subjects" class="form-control" placeholder="e.g. Chemistry HL, Math AA SL">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="student-target">Target Academic Goal</label>
+          <input type="text" id="student-target" class="form-control"
+            placeholder="e.g. Score 7 in HL Chemistry / 95% on finals">
+        </div>
+
+        <div class="retro-card" style="padding: 10px; margin-top: 10px; margin-bottom: 10px;">
+          <div class="badge-stamp" style="margin-bottom: 8px;">Parent / Guardian CRM Details</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="student-parent-name">Parent Name</label>
+              <input type="text" id="student-parent-name" class="form-control" placeholder="e.g. Sarah Lin">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="student-parent-contact-pref">Preferred Contact</label>
+              <select id="student-parent-contact-pref" class="form-control">
+                <option value="WhatsApp">WhatsApp</option>
+                <option value="SMS">SMS / Phone</option>
+                <option value="Email">Email</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="student-parent-phone">Parent Phone</label>
+              <input type="tel" id="student-parent-phone" class="form-control" placeholder="+123456789">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="student-parent-email">Parent Email</label>
+              <input type="email" id="student-parent-email" class="form-control" placeholder="parent@example.com">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="student-notes">Tutor Observation Notes</label>
+          <textarea id="student-notes" class="form-control" rows="2"
+            placeholder="Learning preferences, focus topics..."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button type="button" class="btn" data-action="close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Student</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Session Form Modal -->
+  <div class="modal-backdrop" id="modal-session" role="dialog" aria-modal="true" aria-labelledby="modal-session-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-session-title">Schedule Lesson Session</h3>
+        <button class="modal-close" data-action="close-modal" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-session">
+        <input type="hidden" id="session-id">
+        <div class="form-group">
+          <label class="form-label" for="session-student-select">Student *</label>
+          <select id="session-student-select" class="form-control" required>
+            <!-- Rendered via JS -->
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="session-date">Date *</label>
+            <input type="date" id="session-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="session-time">Start Time *</label>
+            <input type="time" id="session-time" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="session-duration">Duration (Minutes)</label>
+            <select id="session-duration" class="form-control">
+              <option value="30">30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60" selected>60 minutes (1 hour)</option>
+              <option value="90">90 minutes (1.5 hours)</option>
+              <option value="120">120 minutes (2 hours)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="session-subject">Subject</label>
+            <input type="text" id="session-subject" class="form-control" placeholder="e.g. Mathematics">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="session-rate-override">Rate Override (Optional Flat Fee)</label>
+            <input type="number" id="session-rate-override" class="form-control"
+              placeholder="Leave empty for student rate" min="0" step="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="session-status">Status</label>
+            <select id="session-status" class="form-control">
+              <option value="Scheduled">Scheduled</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled - Student">Cancelled - Student</option>
+              <option value="Cancelled - Tutor">Cancelled - Tutor</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label
+            style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: var(--font-mono); font-size: 12px;">
+            <input type="checkbox" id="session-is-recurring">
+            <span>Save also as Standing Recurring Weekly Slot</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+          <button type="button" class="btn" data-action="close-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Session Complete & Notes Modal -->
+  <div class="modal-backdrop" id="modal-notes" role="dialog" aria-modal="true" aria-labelledby="modal-notes-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-notes-title">Session Log & Notes</h3>
+        <button class="modal-close" data-action="close-modal" aria-label="Close">&times;</button>
+      </div>
+      <form id="form-notes">
+        <input type="hidden" id="notes-session-id">
+        <div id="notes-session-summary"
+          style="margin-bottom: 12px; font-family: var(--font-mono); font-size: 13px; color: var(--accent-frog);"></div>
+
+        <div class="form-group">
+          <label class="form-label" for="notes-topic">Topic Covered *</label>
+          <input type="text" id="notes-topic" class="form-control" placeholder="e.g. Quadratic Equations & Graphing"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="notes-homework">Homework Assigned & Due Date</label>
+          <input type="text" id="notes-homework" class="form-control"
+            placeholder="e.g. Chapter 4 Review #1-15 due next Tuesday">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="notes-rating">Engagement & Understanding Rating</label>
+          <select id="notes-rating" class="form-control">
+            <option value="5">⭐⭐⭐⭐⭐ 5/5 - Outstanding Mastery</option>
+            <option value="4">⭐⭐⭐⭐ 4/5 - Strong Comprehension</option>
+            <option value="3">⭐⭐⭐ 3/5 - Solid Progress, Needs Practice</option>
+            <option value="2">⭐⭐ 2/5 - Struggling with Concepts</option>
+            <option value="1">⭐ 1/5 - Urgent Review Required</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="notes-parent-feedback">Parent-Facing Feedback Note (Shared with Parent)</label>
+          <textarea id="notes-parent-feedback" class="form-control" rows="2"
+            placeholder="e.g. Maya did great with synthesis problems today."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+          <button type="button" class="btn" id="btn-quick-share-from-notes" data-action="quick-share-notes">💬 Share to
+            WhatsApp</button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn" data-action="close-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Notes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Share Message Modal -->
+  <div class="modal-backdrop" id="modal-share" role="dialog" aria-modal="true" aria-labelledby="modal-share-title">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-share-title">💬 Parent Message Summary</h3>
+        <button class="modal-close" data-action="close-modal" aria-label="Close">&times;</button>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+        Formatted text ready to copy or open in WhatsApp:
+      </p>
+      <textarea id="share-text-area" class="form-control" rows="8" readonly
+        style="font-family: var(--font-mono); font-size: 12px;"></textarea>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px;">
+        <a id="share-whatsapp-btn" class="btn btn-primary" target="_blank" rel="noopener noreferrer">🚀 Open in
+          WhatsApp</a>
+        <button class="btn" id="btn-copy-share-text" data-action="copy-share-text">📋 Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Printable Invoice Dialog / Sheet -->
+  <div class="modal-backdrop" id="modal-invoice-view" role="dialog" aria-modal="true"
+    aria-labelledby="modal-invoice-title">
+    <div class="modal-content" style="max-width: 720px; background: #ffffff; color: #000000;">
+      <div class="modal-header" style="border-bottom: 2px solid #000000;">
+        <h3 class="modal-title" id="modal-invoice-title" style="color: #000000;">Invoice Preview</h3>
+        <button class="modal-close" data-action="close-modal" aria-label="Close"
+          style="color: #000000;">&times;</button>
+      </div>
+      <div id="invoice-printable-content" class="printable-invoice-container" style="padding: 10px 0;">
+        <!-- Dynamically rendered printable invoice -->
+      </div>
+      <div
+        style="display: flex; justify-content: flex-end; gap: 8px; border-top: 2px solid #eeeeee; padding-top: 14px; margin-top: 14px;">
+        <button type="button" class="btn" data-action="close-modal"
+          style="color: #000000; border-color: #000000;">Close</button>
+        <button type="button" class="btn btn-primary" id="btn-print-invoice" data-action="print-invoice">🖨️ Print /
+          Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ==========================================================================
+       VANILLA JAVASCRIPT LOGIC
+       Adhering strictly to PRD, Frontend Specialist Agent, and LocalStorage Skill
+       ========================================================================== -->
+  <script>
+    'use strict';
+
+    /* ==========================================================================
+       1. LOCALSTORAGE SERVICE (Strict adherence to LocalStorage SKILL)
+       ========================================================================== */
+    const StorageService = {
+      KEY: 'tutorfrog_data_v1',
+      memoryFallback: null,
+
+      isAvailable() {
+        try {
+          const testKey = '__tf_test__';
+          localStorage.setItem(testKey, testKey);
+          localStorage.removeItem(testKey);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      },
+
+      save(data) {
+        try {
+          if (!data || typeof data !== 'object') {
+            throw new Error('StorageService.save: Invalid data payload');
+          }
+          if (this.isAvailable()) {
+            localStorage.setItem(this.KEY, JSON.stringify(data));
+          } else {
+            this.memoryFallback = JSON.parse(JSON.stringify(data));
+          }
+          return true;
+        } catch (error) {
+          console.error('StorageService.save failed:', error);
+          if (error.name === 'QuotaExceededError') {
+            Toast.show('Storage quota exceeded! Please export backup.', 'error');
+          }
+          return false;
+        }
+      },
+
+      load() {
+        try {
+          if (this.isAvailable()) {
+            const raw = localStorage.getItem(this.KEY);
+            return raw ? JSON.parse(raw) : null;
+          } else {
+            return this.memoryFallback;
+          }
+        } catch (error) {
+          console.error('StorageService.load failed:', error);
+          return null;
+        }
+      },
+
+      clear() {
+        try {
+          if (this.isAvailable()) {
+            localStorage.removeItem(this.KEY);
+          }
+          this.memoryFallback = null;
+          return true;
+        } catch (error) {
+          console.error('StorageService.clear failed:', error);
+          return false;
+        }
+      }
+    };
+
+    /* ==========================================================================
+       2. REALISTIC DEMO DATA SEEDER
+       ========================================================================== */
+    const DemoData = {
+      get() {
+        const today = new Date();
+        const formatDate = (offsetDays) => {
+          const d = new Date(today);
+          d.setDate(d.getDate() + offsetDays);
+          return d.toISOString().split('T')[0];
+        };
+
+        return {
+          version: '0.1.0',
+          lastUpdated: new Date().toISOString(),
+          settings: {
+            tutorName: 'Alex Mercer',
+            businessName: 'Frog Leap Tutoring',
+            contactEmail: 'alex.mercer@frogleap.io',
+            contactPhone: '+1 (555) 349-8821',
+            currencySymbol: '$',
+            defaultHourlyRate: 70,
+            defaultDurationMinutes: 60,
+            paymentInstructions: 'Bank: Frog Leap BSB 123-456 Acc 98765432 | Venmo/Zelle: @AlexMercer-Tutor'
+          },
+          students: [
+            {
+              id: 'stu_01',
+              name: 'Maya Lin',
+              status: 'Active',
+              grade: 'Year 11',
+              school: 'St. Jude International School',
+              curriculum: 'IB Diploma',
+              subjects: ['Chemistry HL', 'Mathematics AA SL'],
+              targetGoal: 'Level 7 in Chemistry HL for Med School Entry',
+              hourlyRate: 75,
+              parentName: 'Sarah Lin',
+              preferredContact: 'WhatsApp',
+              parentPhone: '+15559876543',
+              parentEmail: 'sarah.lin@example.com',
+              notes: 'Excellent on conceptual mechanics, needs extra drill on chemical kinetics and stoichiometry.'
+            },
+            {
+              id: 'stu_02',
+              name: 'Marcus Vance',
+              status: 'Active',
+              grade: 'Grade 12',
+              school: 'Oakridge Senior High',
+              curriculum: 'AP Program',
+              subjects: ['AP Physics C: Mechanics', 'Calculus BC'],
+              targetGoal: 'Score 5 on both AP exams in May',
+              hourlyRate: 80,
+              parentName: 'David Vance',
+              preferredContact: 'SMS',
+              parentPhone: '+15554321098',
+              parentEmail: 'david.vance@example.org',
+              notes: 'Strong mathematical aptitude. Struggles occasionally with rotational inertia problem framing.'
+            },
+            {
+              id: 'stu_03',
+              name: 'Chloe Zhao',
+              status: 'Active',
+              grade: 'Year 10',
+              school: 'Westfield Grammar School',
+              curriculum: 'GCSE / State High',
+              subjects: ['General Science', 'Intermediate Algebra'],
+              targetGoal: 'Achieve 90%+ in semester finals',
+              hourlyRate: 65,
+              parentName: 'Evelyn Zhao',
+              preferredContact: 'Email',
+              parentPhone: '+15556781234',
+              parentEmail: 'evelyn.zhao@example.com',
+              notes: 'Benefits greatly from visual diagrams and spaced repetition practice sheets.'
+            }
+          ],
+          templates: [
+            {
+              id: 'tpl_01',
+              studentId: 'stu_01',
+              dayOfWeek: 2, // Tuesday
+              startTime: '16:00',
+              durationMinutes: 60,
+              subject: 'Chemistry HL',
+              active: true
+            },
+            {
+              id: 'tpl_02',
+              studentId: 'stu_02',
+              dayOfWeek: 4, // Thursday
+              startTime: '17:00',
+              durationMinutes: 90,
+              subject: 'AP Physics C',
+              active: true
+            },
+            {
+              id: 'tpl_03',
+              studentId: 'stu_03',
+              dayOfWeek: 6, // Saturday
+              startTime: '10:00',
+              durationMinutes: 60,
+              subject: 'Algebra',
+              active: true
+            }
+          ],
+          sessions: [
+            {
+              id: 'ses_01',
+              studentId: 'stu_01',
+              date: formatDate(-2),
+              startTime: '16:00',
+              endTime: '17:00',
+              durationMinutes: 60,
+              subject: 'Chemistry HL',
+              rate: 75,
+              isFlatRate: false,
+              status: 'Completed',
+              topicCovered: 'Hess Law & Born-Haber Cycles',
+              homeworkAssigned: 'IB Questionbank Enthalpy set #1-8',
+              rating: 5,
+              parentFeedback: 'Maya mastered the energy diagrams very quickly today. Excellent focus.',
+              invoiceId: 'inv_01'
+            },
+            {
+              id: 'ses_02',
+              studentId: 'stu_02',
+              date: formatDate(-1),
+              startTime: '17:00',
+              endTime: '18:30',
+              durationMinutes: 90,
+              subject: 'AP Physics C',
+              rate: 120, // 1.5h * 80
+              isFlatRate: false,
+              status: 'Completed',
+              topicCovered: 'Angular Momentum & Torque Integration',
+              homeworkAssigned: '2022 AP Free Response Questions #2 & #3',
+              rating: 4,
+              parentFeedback: 'Strong problem-solving on conservation of angular momentum.',
+              invoiceId: null
+            },
+            {
+              id: 'ses_03',
+              studentId: 'stu_01',
+              date: formatDate(0), // Today
+              startTime: '16:00',
+              endTime: '17:00',
+              durationMinutes: 60,
+              subject: 'Chemistry HL',
+              rate: 75,
+              isFlatRate: false,
+              status: 'Scheduled',
+              topicCovered: 'Kinetics & Rate Laws',
+              homeworkAssigned: '',
+              rating: 5,
+              parentFeedback: '',
+              invoiceId: null
+            },
+            {
+              id: 'ses_04',
+              studentId: 'stu_03',
+              date: formatDate(1), // Tomorrow
+              startTime: '15:30',
+              endTime: '16:30',
+              durationMinutes: 60,
+              subject: 'Intermediate Algebra',
+              rate: 65,
+              isFlatRate: false,
+              status: 'Scheduled',
+              topicCovered: 'Factoring Polynomials',
+              homeworkAssigned: '',
+              rating: 5,
+              parentFeedback: '',
+              invoiceId: null
+            }
+          ],
+          invoices: [
+            {
+              id: 'inv_01',
+              invoiceNumber: 'TF-2026-001',
+              studentId: 'stu_01',
+              issueDate: formatDate(-2),
+              dueDate: formatDate(5),
+              sessionIds: ['ses_01'],
+              subtotal: 75,
+              discount: 0,
+              totalDue: 75,
+              status: 'Unpaid',
+              notes: 'Payment due within 7 days. Thank you for your partnership!'
+            }
+          ]
+        };
+      }
+    };
+
+    /* ==========================================================================
+       3. APPLICATION STATE STORE
+       ========================================================================== */
+    const AppStore = {
+      state: {
+        settings: {
+          tutorName: 'Private Tutor',
+          businessName: 'TutorFrog Command',
+          contactEmail: 'tutor@example.com',
+          contactPhone: '',
+          currencySymbol: '$',
+          defaultHourlyRate: 60,
+          defaultDurationMinutes: 60,
+          paymentInstructions: 'Bank Transfer: BSB 000-000 Acc 12345678'
+        },
+        students: [],
+        templates: [],
+        sessions: [],
+        invoices: [],
+        currentWeekOffset: 0,
+        currentDaySelected: 0 // 0 = Mon, 6 = Sun
+      },
+
+      init() {
+        const loaded = StorageService.load();
+        if (loaded && loaded.students && Array.isArray(loaded.students)) {
+          this.state = Object.assign(this.state, loaded);
+        } else {
+          // Initialize with demo data on very first launch
+          this.state = Object.assign(this.state, DemoData.get());
+          StorageService.save(this.state);
+        }
+
+        // Set current day selected based on today's day of week
+        const todayDay = new Date().getDay(); // 0 is Sunday, 1 is Monday
+        this.state.currentDaySelected = todayDay === 0 ? 6 : todayDay - 1;
+      },
+
+      save() {
+        StorageService.save(this.state);
+      },
+
+      addStudent(student) {
+        student.id = 'stu_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+        this.state.students.push(student);
+        this.save();
+      },
+
+      updateStudent(student) {
+        const index = this.state.students.findIndex(s => s.id === student.id);
+        if (index !== -1) {
+          this.state.students[index] = student;
+          this.save();
+        }
+      },
+
+      getStudent(id) {
+        return this.state.students.find(s => s.id === id);
+      },
+
+      addSession(session) {
+        session.id = 'ses_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+        session.invoiceId = null;
+        this.state.sessions.push(session);
+        this.save();
+      },
+
+      updateSession(session) {
+        const index = this.state.sessions.findIndex(s => s.id === session.id);
+        if (index !== -1) {
+          this.state.sessions[index] = session;
+          this.save();
+        }
+      },
+
+      deleteSession(id) {
+        this.state.sessions = this.state.sessions.filter(s => s.id !== id);
+        this.save();
+      },
+
+      getSession(id) {
+        return this.state.sessions.find(s => s.id === id);
+      },
+
+      addInvoice(invoice) {
+        invoice.id = 'inv_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4);
+        this.state.invoices.push(invoice);
+        // Mark session records as invoiced
+        invoice.sessionIds.forEach(sesId => {
+          const ses = this.getSession(sesId);
+          if (ses) ses.invoiceId = invoice.id;
+        });
+        this.save();
+      },
+
+      toggleInvoiceStatus(id) {
+        const inv = this.state.invoices.find(i => i.id === id);
+        if (inv) {
+          inv.status = inv.status === 'Paid' ? 'Unpaid' : 'Paid';
+          this.save();
+        }
+      }
+    };
+
+    /* ==========================================================================
+       4. DATE & TIME UTILITY HELPERS
+       ========================================================================== */
+    const DateUtils = {
+      getMonday(d) {
+        d = new Date(d);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+      },
+
+      formatDate(d) {
+        const pad = n => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      },
+
+      formatDisplayDate(dateStr) {
+        if (!dateStr) return '';
+        const parts = dateStr.split('-');
+        if (parts.length < 3) return dateStr;
+        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+      },
+
+      formatTime(timeStr) {
+        if (!timeStr) return '';
+        const [h, m] = timeStr.split(':');
+        const hour = parseInt(h, 10);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const formattedHour = hour % 12 || 12;
+        return `${formattedHour}:${m} ${ampm}`;
+      },
+
+      getWeekDays(weekOffset = 0) {
+        const now = new Date();
+        now.setDate(now.getDate() + (weekOffset * 7));
+        const monday = this.getMonday(now);
+        const days = [];
+        const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+        for (let i = 0; i < 7; i++) {
+          const current = new Date(monday);
+          current.setDate(monday.getDate() + i);
+          days.push({
+            name: dayNames[i],
+            dateStr: this.formatDate(current),
+            dayNumber: current.getDate(),
+            isToday: this.formatDate(new Date()) === this.formatDate(current)
+          });
+        }
+        return days;
+      }
+    };
+
+    /* ==========================================================================
+       5. TOAST NOTIFICATION SERVICE
+       ========================================================================== */
+    const Toast = {
+      show(message, type = 'normal') {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type === 'error' ? 'error' : ''}`;
+        toast.innerHTML = `<span>${type === 'error' ? '❌' : '🐸'}</span><span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 200ms ease';
+          setTimeout(() => toast.remove(), 200);
+        }, 3200);
+      }
+    };
+
+    /* ==========================================================================
+       6. UI RENDER ENGINE
+       ========================================================================== */
+    const UIRenderer = {
+      renderAll() {
+        this.renderStats();
+        this.renderDashboard();
+        this.renderSchedule();
+        this.renderStudents();
+        this.renderInvoices();
+        this.renderSettings();
+      },
+
+      renderStats() {
+        const students = AppStore.state.students;
+        const sessions = AppStore.state.sessions;
+        const sym = AppStore.state.settings.currencySymbol || '$';
+
+        // Active Students
+        const activeCount = students.filter(s => s.status === 'Active').length;
+        document.getElementById('stat-active-students').textContent = activeCount;
+
+        // Lessons This Week
+        const weekDays = DateUtils.getWeekDays(AppStore.state.currentWeekOffset);
+        const weekDates = weekDays.map(d => d.dateStr);
+        const lessonsThisWeek = sessions.filter(s => weekDates.includes(s.date) && s.status !== 'Cancelled - Student' && s.status !== 'Cancelled - Tutor');
+        document.getElementById('stat-lessons-week').textContent = lessonsThisWeek.length;
+
+        // Hours Taught (Month to Date)
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        const completedThisMonth = sessions.filter(s => s.status === 'Completed' && s.date.startsWith(currentMonth));
+        const totalMinutes = completedThisMonth.reduce((acc, s) => acc + (s.durationMinutes || 60), 0);
+        const hours = (totalMinutes / 60).toFixed(1);
+        document.getElementById('stat-hours-taught').textContent = `${hours}h`;
+
+        // Unbilled Completed Amount
+        const unbilledSessions = sessions.filter(s => s.status === 'Completed' && !s.invoiceId);
+        const unbilledTotal = unbilledSessions.reduce((acc, s) => acc + (s.rate || 0), 0);
+        document.getElementById('stat-unbilled-amount').textContent = `${sym}${unbilledTotal.toFixed(0)}`;
+      },
+
+      renderDashboard() {
+        const todayStr = DateUtils.formatDate(new Date());
+        const todaySessions = AppStore.state.sessions.filter(s => s.date === todayStr);
+        const listEl = document.getElementById('dashboard-today-list');
+
+        if (todaySessions.length === 0) {
+          listEl.innerHTML = `
+            <div style="color: var(--text-muted); font-size: 13px; padding: 12px 0;">
+              No sessions scheduled for today. Ready for a leap forward!
+            </div>
+          `;
+        } else {
+          listEl.innerHTML = todaySessions.map(ses => {
+            const student = AppStore.getStudent(ses.studentId);
+            const sym = AppStore.state.settings.currencySymbol || '$';
+            return `
+              <div class="session-item status-${ses.status.toLowerCase().replace(/[^a-z]/g, '')}" style="margin-bottom: 8px;">
+                <div class="session-time">
+                  <span>⏰ ${DateUtils.formatTime(ses.startTime)} - ${DateUtils.formatTime(ses.endTime)} (${ses.durationMinutes}m)</span>
+                  <span class="badge-stamp status-${ses.status.toLowerCase().replace(/[^a-z]/g, '')}">${ses.status}</span>
+                </div>
+                <div class="session-student">${student ? student.name : 'Unknown Student'} // ${ses.subject || 'General'}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                  <span style="font-family: var(--font-mono); font-size: 12px; color: var(--accent-frog);">Fee: ${sym}${ses.rate}</span>
+                  <div class="session-actions">
+                    ${ses.status !== 'Completed' ? `
+                      <button class="btn btn-sm btn-primary" data-action="quick-complete" data-id="${ses.id}">✓ Complete</button>
+                    ` : ''}
+                    <button class="btn btn-sm" data-action="open-notes" data-id="${ses.id}">📝 Notes & Feedback</button>
+                    <button class="btn btn-sm" data-action="quick-share" data-id="${ses.id}">💬 WhatsApp</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Unpaid Invoices
+        const unpaidInvoices = AppStore.state.invoices.filter(i => i.status === 'Unpaid');
+        const unpaidEl = document.getElementById('dashboard-unpaid-invoices');
+        const sym = AppStore.state.settings.currencySymbol || '$';
+
+        if (unpaidInvoices.length === 0) {
+          unpaidEl.innerHTML = `
+            <div style="color: var(--text-muted); font-size: 13px; padding: 12px 0;">
+              ✨ All invoices are settled and up to date!
+            </div>
+          `;
+        } else {
+          unpaidEl.innerHTML = unpaidInvoices.map(inv => {
+            const student = AppStore.getStudent(inv.studentId);
+            return `
+              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-hard); padding: 8px 0;">
+                <div>
+                  <strong style="color: var(--text-primary); font-family: var(--font-mono);">${inv.invoiceNumber}</strong>
+                  <span style="color: var(--text-muted); margin-left: 8px;">${student ? student.name : 'Unknown'}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span style="font-family: var(--font-mono); color: var(--accent-amber); font-weight: 700;">${sym}${inv.totalDue}</span>
+                  <button class="btn btn-sm btn-primary" data-action="toggle-invoice-paid" data-id="${inv.id}">Mark Paid</button>
+                  <button class="btn btn-sm" data-action="view-invoice-modal" data-id="${inv.id}">View</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      },
+
+      renderSchedule() {
+        const weekDays = DateUtils.getWeekDays(AppStore.state.currentWeekOffset);
+        const weekLabel = `${weekDays[0].dayNumber} ${DateUtils.formatDisplayDate(weekDays[0].dateStr).split(' ')[0]} - ${weekDays[6].dayNumber} ${DateUtils.formatDisplayDate(weekDays[6].dateStr)}`;
+        document.getElementById('schedule-week-label').textContent = weekLabel;
+
+        // Mobile Day Pills
+        const pillsContainer = document.getElementById('schedule-day-pills');
+        pillsContainer.innerHTML = weekDays.map((d, index) => `
+          <div class="day-pill ${index === AppStore.state.currentDaySelected ? 'active' : ''}" data-action="select-day" data-index="${index}">
+            <span class="day-pill-name">${d.name}</span>
+            <span class="day-pill-date">${d.dayNumber}</span>
+          </div>
+        `).join('');
+
+        // Desktop 7-Column Grid
+        const gridContainer = document.getElementById('desktop-weekly-grid');
+        gridContainer.innerHTML = weekDays.map(d => {
+          const daySessions = AppStore.state.sessions.filter(s => s.date === d.dateStr);
+          return `
+            <div class="grid-day-column ${d.isToday ? 'today' : ''}">
+              <div class="grid-day-header">
+                <div class="grid-day-name">${d.name}</div>
+                <div class="grid-day-date">${d.dayNumber} ${DateUtils.formatDisplayDate(d.dateStr).split(' ')[0]}</div>
+              </div>
+              <div class="grid-day-events">
+                ${daySessions.map(ses => this.renderSessionSnippet(ses)).join('')}
+                ${daySessions.length === 0 ? '<div style="font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 20px;">—</div>' : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Mobile Agenda View (Selected Day Only)
+        const selectedDay = weekDays[AppStore.state.currentDaySelected];
+        const mobileContainer = document.getElementById('mobile-agenda-view');
+        if (selectedDay) {
+          const daySessions = AppStore.state.sessions.filter(s => s.date === selectedDay.dateStr);
+          mobileContainer.innerHTML = `
+            <div class="retro-card">
+              <div class="retro-card-header">
+                <h3 class="retro-card-title">${selectedDay.name}, ${DateUtils.formatDisplayDate(selectedDay.dateStr)}</h3>
+                <button class="btn btn-sm btn-primary" data-action="open-session-modal" data-date="${selectedDay.dateStr}">+ Add Lesson</button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                ${daySessions.map(ses => this.renderSessionSnippet(ses, true)).join('')}
+                ${daySessions.length === 0 ? '<div style="color: var(--text-muted); font-size: 13px;">No sessions booked for this day.</div>' : ''}
+              </div>
+            </div>
+          `;
+        }
+      },
+
+      renderSessionSnippet(ses, showFullActions = false) {
+        const student = AppStore.getStudent(ses.studentId);
+        const sym = AppStore.state.settings.currencySymbol || '$';
+        const statusClass = ses.status.toLowerCase().replace(/[^a-z]/g, '');
+
+        return `
+          <div class="session-item status-${statusClass}">
+            <div class="session-time">
+              <span>${DateUtils.formatTime(ses.startTime)} (${ses.durationMinutes}m)</span>
+              <span class="badge-stamp status-${statusClass}">${ses.status}</span>
+            </div>
+            <div class="session-student">${student ? student.name : 'Unknown'}</div>
+            <div class="session-subject">${ses.subject || 'General Tutoring'} • ${sym}${ses.rate}</div>
+            <div class="session-actions">
+              ${ses.status !== 'Completed' ? `
+                <button class="btn btn-sm btn-primary" data-action="quick-complete" data-id="${ses.id}" title="Mark completed">✓ Done</button>
+              ` : ''}
+              <button class="btn btn-sm" data-action="open-notes" data-id="${ses.id}" title="Add or edit notes">📝 Notes</button>
+              <button class="btn btn-sm" data-action="quick-share" data-id="${ses.id}" title="Share summary">💬 Share</button>
+              <button class="btn btn-sm" data-action="edit-session" data-id="${ses.id}" title="Edit session">✏️</button>
+            </div>
+          </div>
+        `;
+      },
+
+      renderStudents() {
+        const searchVal = (document.getElementById('students-search')?.value || '').toLowerCase().trim();
+        const statusVal = document.getElementById('students-status-filter')?.value || 'ALL';
+
+        let filtered = AppStore.state.students.filter(student => {
+          const matchesStatus = statusVal === 'ALL' || student.status === statusVal;
+          const searchHaystack = `${student.name} ${student.school || ''} ${student.curriculum || ''} ${(student.subjects || []).join(' ')}`.toLowerCase();
+          const matchesSearch = !searchVal || searchHaystack.includes(searchVal);
+          return matchesStatus && matchesSearch;
+        });
+
+        const container = document.getElementById('students-container');
+        const sym = AppStore.state.settings.currencySymbol || '$';
+
+        if (filtered.length === 0) {
+          container.innerHTML = `
+            <div style="grid-column: 1 / -1; padding: 30px; text-align: center; color: var(--text-muted); background: var(--bg-surface); border: 2px solid var(--border-hard);">
+              No students found matching your criteria.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = filtered.map(student => {
+          // Calculate student metrics
+          const studentSessions = AppStore.state.sessions.filter(s => s.studentId === student.id);
+          const completedCount = studentSessions.filter(s => s.status === 'Completed').length;
+          const unbilledAmount = studentSessions.filter(s => s.status === 'Completed' && !s.invoiceId).reduce((a, s) => a + (s.rate || 0), 0);
+
+          return `
+            <div class="student-card">
+              <div>
+                <div class="student-card-top">
+                  <div>
+                    <h3 class="student-name">${student.name}</h3>
+                    <div class="student-school">${student.grade || 'Grade N/A'} • ${student.school || 'Private'}</div>
+                  </div>
+                  <span class="badge-stamp ${student.status === 'Active' ? 'status-completed' : 'status-unpaid'}">${student.status}</span>
+                </div>
+
+                <div class="student-meta-list" style="margin-top: 10px;">
+                  <div class="student-meta-item">
+                    <span class="meta-label">Curriculum</span>
+                    <span class="meta-value">${student.curriculum || 'Standard'}</span>
+                  </div>
+                  <div class="student-meta-item">
+                    <span class="meta-label">Hourly Rate</span>
+                    <span class="meta-value">${sym}${student.hourlyRate || AppStore.state.settings.defaultHourlyRate}/hr</span>
+                  </div>
+                  <div class="student-meta-item">
+                    <span class="meta-label">Subjects</span>
+                    <span class="meta-value" style="max-width: 180px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                      ${(student.subjects || []).join(', ') || 'General'}
+                    </span>
+                  </div>
+                  <div class="student-meta-item">
+                    <span class="meta-label">Completed Lessons</span>
+                    <span class="meta-value">${completedCount}</span>
+                  </div>
+                  <div class="student-meta-item">
+                    <span class="meta-label">Unbilled Balance</span>
+                    <span class="meta-value" style="color: ${unbilledAmount > 0 ? 'var(--accent-amber)' : 'var(--text-muted)'};">
+                      ${sym}${unbilledAmount}
+                    </span>
+                  </div>
+                </div>
+
+                ${student.targetGoal ? `
+                  <div style="margin-top: 8px; font-size: 11px; background: var(--bg-primary); padding: 6px; border-left: 2px solid var(--accent-frog);">
+                    🎯 <strong>Goal:</strong> ${student.targetGoal}
+                  </div>
+                ` : ''}
+
+                <div class="student-contact-links">
+                  ${student.parentPhone ? `
+                    <a href="tel:${student.parentPhone}" class="btn btn-sm btn-icon" title="Call Parent">📞 Call</a>
+                    <a href="https://wa.me/${student.parentPhone.replace(/[^0-9]/g, '')}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-icon" title="WhatsApp Parent">💬 WhatsApp</a>
+                  ` : ''}
+                  ${student.parentEmail ? `
+                    <a href="mailto:${student.parentEmail}" class="btn btn-sm btn-icon" title="Email Parent">✉️ Email</a>
+                  ` : ''}
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 6px; border-top: 1px solid var(--border-hard); padding-top: 10px; margin-top: 6px;">
+                <button class="btn btn-sm btn-primary" style="flex: 1;" data-action="open-session-modal" data-student-id="${student.id}">+ Schedule</button>
+                <button class="btn btn-sm" data-action="edit-student" data-id="${student.id}">✏️ Edit</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      renderInvoices() {
+        const sym = AppStore.state.settings.currencySymbol || '$';
+
+        // Populate Unbilled Student Select Dropdown
+        const selectEl = document.getElementById('invoice-student-select');
+        const studentsWithUnbilled = AppStore.state.students.map(s => {
+          const unbilled = AppStore.state.sessions.filter(ses => ses.studentId === s.id && ses.status === 'Completed' && !ses.invoiceId);
+          return { student: s, count: unbilled.length, total: unbilled.reduce((a, b) => a + (b.rate || 0), 0) };
+        }).filter(item => item.count > 0);
+
+        if (studentsWithUnbilled.length === 0) {
+          selectEl.innerHTML = `<option value="">No completed unbilled sessions found</option>`;
+          document.getElementById('btn-create-invoice').disabled = true;
+        } else {
+          selectEl.innerHTML = studentsWithUnbilled.map(item => `
+            <option value="${item.student.id}">${item.student.name} (${item.count} unbilled sessions — Total: ${sym}${item.total})</option>
+          `).join('');
+          document.getElementById('btn-create-invoice').disabled = false;
+        }
+
+        // Ledger Table
+        const tbody = document.getElementById('invoices-table-body');
+        const invoices = AppStore.state.invoices;
+
+        if (invoices.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No invoices generated yet.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        tbody.innerHTML = invoices.map(inv => {
+          const student = AppStore.getStudent(inv.studentId);
+          const isPaid = inv.status === 'Paid';
+          return `
+            <tr>
+              <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-frog);">${inv.invoiceNumber}</td>
+              <td style="font-weight: 600;">${student ? student.name : 'Unknown'}</td>
+              <td style="font-family: var(--font-mono);">${inv.issueDate}</td>
+              <td style="font-family: var(--font-mono);">${inv.sessionIds ? inv.sessionIds.length : 0} lessons</td>
+              <td style="font-family: var(--font-mono); font-weight: 700;">${sym}${inv.totalDue}</td>
+              <td>
+                <span class="badge-stamp ${isPaid ? 'status-paid' : 'status-unpaid'}">${inv.status}</span>
+              </td>
+              <td>
+                <div style="display: flex; gap: 4px;">
+                  <button class="btn btn-sm ${isPaid ? '' : 'btn-primary'}" data-action="toggle-invoice-paid" data-id="${inv.id}">
+                    ${isPaid ? 'Mark Unpaid' : 'Mark Paid'}
+                  </button>
+                  <button class="btn btn-sm" data-action="view-invoice-modal" data-id="${inv.id}">View / Print</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      },
+
+      renderSettings() {
+        const s = AppStore.state.settings;
+        document.getElementById('setting-tutor-name').value = s.tutorName || '';
+        document.getElementById('setting-business-name').value = s.businessName || '';
+        document.getElementById('setting-email').value = s.contactEmail || '';
+        document.getElementById('setting-phone').value = s.contactPhone || '';
+        document.getElementById('setting-currency').value = s.currencySymbol || '$';
+        document.getElementById('setting-default-rate').value = s.defaultHourlyRate || 60;
+        document.getElementById('setting-payment-instructions').value = s.paymentInstructions || '';
+      }
+    };
+
+    /* ==========================================================================
+       7. ACTIONS & EVENT DISPATCHER
+       ========================================================================== */
+    const Actions = {
+      openStudentModal(studentId = null) {
+        const modal = document.getElementById('modal-student');
+        const form = document.getElementById('form-student');
+        form.reset();
+
+        if (studentId) {
+          const student = AppStore.getStudent(studentId);
+          if (student) {
+            document.getElementById('modal-student-title').textContent = 'Edit Student Dossier';
+            document.getElementById('student-id').value = student.id;
+            document.getElementById('student-name').value = student.name;
+            document.getElementById('student-status').value = student.status || 'Active';
+            document.getElementById('student-grade').value = student.grade || '';
+            document.getElementById('student-school').value = student.school || '';
+            document.getElementById('student-curriculum').value = student.curriculum || '';
+            document.getElementById('student-rate').value = student.hourlyRate || AppStore.state.settings.defaultHourlyRate;
+            document.getElementById('student-subjects').value = (student.subjects || []).join(', ');
+            document.getElementById('student-target').value = student.targetGoal || '';
+            document.getElementById('student-parent-name').value = student.parentName || '';
+            document.getElementById('student-parent-contact-pref').value = student.preferredContact || 'WhatsApp';
+            document.getElementById('student-parent-phone').value = student.parentPhone || '';
+            document.getElementById('student-parent-email').value = student.parentEmail || '';
+            document.getElementById('student-notes').value = student.notes || '';
+          }
+        } else {
+          document.getElementById('modal-student-title').textContent = 'New Student Dossier';
+          document.getElementById('student-id').value = '';
+          document.getElementById('student-rate').value = AppStore.state.settings.defaultHourlyRate;
+        }
+
+        modal.classList.add('active');
+      },
+
+      saveStudent(e) {
+        e.preventDefault();
+        const id = document.getElementById('student-id').value;
+        const name = document.getElementById('student-name').value.trim();
+        if (!name) {
+          Toast.show('Student name is required', 'error');
+          return;
+        }
+
+        const subjects = document.getElementById('student-subjects').value
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        const studentData = {
+          id: id || undefined,
+          name,
+          status: document.getElementById('student-status').value,
+          grade: document.getElementById('student-grade').value.trim(),
+          school: document.getElementById('student-school').value.trim(),
+          curriculum: document.getElementById('student-curriculum').value.trim(),
+          hourlyRate: parseFloat(document.getElementById('student-rate').value) || AppStore.state.settings.defaultHourlyRate,
+          subjects,
+          targetGoal: document.getElementById('student-target').value.trim(),
+          parentName: document.getElementById('student-parent-name').value.trim(),
+          preferredContact: document.getElementById('student-parent-contact-pref').value,
+          parentPhone: document.getElementById('student-parent-phone').value.trim(),
+          parentEmail: document.getElementById('student-parent-email').value.trim(),
+          notes: document.getElementById('student-notes').value.trim()
+        };
+
+        if (id) {
+          AppStore.updateStudent(studentData);
+          Toast.show(`Updated profile for ${name}`);
+        } else {
+          AppStore.addStudent(studentData);
+          Toast.show(`Enrolled new student: ${name}`);
+        }
+
+        Actions.closeModal();
+        UIRenderer.renderAll();
+      },
+
+      openSessionModal(prefillDate = null, prefillStudentId = null, editSessionId = null) {
+        const modal = document.getElementById('modal-session');
+        const form = document.getElementById('form-session');
+        form.reset();
+
+        // Populate students select
+        const selectEl = document.getElementById('session-student-select');
+        selectEl.innerHTML = AppStore.state.students.map(s => `
+          <option value="${s.id}">${s.name} (${s.grade || 'Student'})</option>
+        `).join('');
+
+        if (editSessionId) {
+          const ses = AppStore.getSession(editSessionId);
+          if (ses) {
+            document.getElementById('modal-session-title').textContent = 'Edit Lesson Session';
+            document.getElementById('session-id').value = ses.id;
+            document.getElementById('session-student-select').value = ses.studentId;
+            document.getElementById('session-date').value = ses.date;
+            document.getElementById('session-time').value = ses.startTime;
+            document.getElementById('session-duration').value = ses.durationMinutes;
+            document.getElementById('session-subject').value = ses.subject || '';
+            document.getElementById('session-rate-override').value = ses.rate || '';
+            document.getElementById('session-status').value = ses.status;
+            document.getElementById('session-is-recurring').checked = false;
+          }
+        } else {
+          document.getElementById('modal-session-title').textContent = 'Schedule Lesson Session';
+          document.getElementById('session-id').value = '';
+          document.getElementById('session-date').value = prefillDate || DateUtils.formatDate(new Date());
+          document.getElementById('session-time').value = '16:00';
+          if (prefillStudentId) {
+            document.getElementById('session-student-select').value = prefillStudentId;
+          }
+        }
+
+        modal.classList.add('active');
+      },
+
+      saveSession(e) {
+        e.preventDefault();
+        const id = document.getElementById('session-id').value;
+        const studentId = document.getElementById('session-student-select').value;
+        const date = document.getElementById('session-date').value;
+        const startTime = document.getElementById('session-time').value;
+        const durationMinutes = parseInt(document.getElementById('session-duration').value, 10);
+        const subject = document.getElementById('session-subject').value.trim();
+        const status = document.getElementById('session-status').value;
+        const isRecurring = document.getElementById('session-is-recurring').checked;
+
+        if (!studentId || !date || !startTime) {
+          Toast.show('Please complete all required fields', 'error');
+          return;
+        }
+
+        const student = AppStore.getStudent(studentId);
+        const hourlyRate = student ? (student.hourlyRate || AppStore.state.settings.defaultHourlyRate) : 60;
+        const customRate = parseFloat(document.getElementById('session-rate-override').value);
+
+        // Auto calculate end time
+        const [h, m] = startTime.split(':').map(Number);
+        const totalMinutes = (h * 60) + m + durationMinutes;
+        const endHour = String(Math.floor(totalMinutes / 60) % 24).padStart(2, '0');
+        const endMin = String(totalMinutes % 60).padStart(2, '0');
+        const endTime = `${endHour}:${endMin}`;
+
+        // Auto calculate session rate
+        const rate = !isNaN(customRate) && customRate > 0
+          ? customRate
+          : Math.round((hourlyRate * (durationMinutes / 60)) * 100) / 100;
+
+        const sessionData = {
+          id: id || undefined,
+          studentId,
+          date,
+          startTime,
+          endTime,
+          durationMinutes,
+          subject: subject || (student && student.subjects ? student.subjects[0] : 'General'),
+          rate,
+          isFlatRate: !isNaN(customRate),
+          status,
+          topicCovered: '',
+          homeworkAssigned: '',
+          rating: 5,
+          parentFeedback: '',
+          invoiceId: null
+        };
+
+        if (id) {
+          const existing = AppStore.getSession(id);
+          if (existing) {
+            sessionData.topicCovered = existing.topicCovered || '';
+            sessionData.homeworkAssigned = existing.homeworkAssigned || '';
+            sessionData.rating = existing.rating || 5;
+            sessionData.parentFeedback = existing.parentFeedback || '';
+            sessionData.invoiceId = existing.invoiceId;
+          }
+          AppStore.updateSession(sessionData);
+          Toast.show('Lesson session updated');
+        } else {
+          AppStore.addSession(sessionData);
+          Toast.show('Lesson booked on schedule!');
+
+          // Also save as recurring template if checked
+          if (isRecurring) {
+            const dayOfWeek = new Date(date).getDay();
+            AppStore.state.templates.push({
+              id: 'tpl_' + Date.now().toString(36),
+              studentId,
+              dayOfWeek,
+              startTime,
+              durationMinutes,
+              subject: sessionData.subject,
+              active: true
+            });
+            AppStore.save();
+            Toast.show('Added standing weekly template');
+          }
+        }
+
+        Actions.closeModal();
+        UIRenderer.renderAll();
+      },
+
+      quickCompleteSession(sessionId) {
+        const ses = AppStore.getSession(sessionId);
+        if (ses) {
+          ses.status = 'Completed';
+          AppStore.updateSession(ses);
+          Toast.show(`Marked session completed!`);
+          UIRenderer.renderAll();
+          // Open notes modal to encourage logging feedback
+          Actions.openNotesModal(sessionId);
+        }
+      },
+
+      openNotesModal(sessionId) {
+        const ses = AppStore.getSession(sessionId);
+        if (!ses) return;
+
+        const student = AppStore.getStudent(ses.studentId);
+        document.getElementById('notes-session-id').value = ses.id;
+        document.getElementById('notes-session-summary').textContent = `
+          Student: ${student ? student.name : 'Unknown'} • ${DateUtils.formatDisplayDate(ses.date)} (${DateUtils.formatTime(ses.startTime)})
+        `;
+        document.getElementById('notes-topic').value = ses.topicCovered || '';
+        document.getElementById('notes-homework').value = ses.homeworkAssigned || '';
+        document.getElementById('notes-rating').value = ses.rating || 5;
+        document.getElementById('notes-parent-feedback').value = ses.parentFeedback || '';
+
+        document.getElementById('modal-notes').classList.add('active');
+      },
+
+      saveNotes(e) {
+        e.preventDefault();
+        const sessionId = document.getElementById('notes-session-id').value;
+        const ses = AppStore.getSession(sessionId);
+        if (ses) {
+          ses.topicCovered = document.getElementById('notes-topic').value.trim();
+          ses.homeworkAssigned = document.getElementById('notes-homework').value.trim();
+          ses.rating = parseInt(document.getElementById('notes-rating').value, 10);
+          ses.parentFeedback = document.getElementById('notes-parent-feedback').value.trim();
+          ses.status = 'Completed'; // Ensure marked completed
+          AppStore.updateSession(ses);
+          Toast.show('Session notes and feedback saved!');
+          Actions.closeModal();
+          UIRenderer.renderAll();
+        }
+      },
+
+      quickShareSession(sessionId) {
+        const ses = AppStore.getSession(sessionId);
+        if (!ses) return;
+
+        const student = AppStore.getStudent(ses.studentId);
+        const tutor = AppStore.state.settings.tutorName || 'Your Tutor';
+        const business = AppStore.state.settings.businessName || 'TutorFrog';
+
+        const text = [
+          `🐸 *${business} Session Summary*`,
+          `👤 *Student:* ${student ? student.name : 'Student'}`,
+          `📅 *Date:* ${DateUtils.formatDisplayDate(ses.date)} (${DateUtils.formatTime(ses.startTime)} - ${DateUtils.formatTime(ses.endTime)})`,
+          `📚 *Subject:* ${ses.subject || 'General'}`,
+          `🎯 *Topic Covered:* ${ses.topicCovered || 'Concept Review & Problem Practice'}`,
+          ses.homeworkAssigned ? `📝 *Homework:* ${ses.homeworkAssigned}` : null,
+          ses.parentFeedback ? `💬 *Tutor Feedback:* ${ses.parentFeedback}` : null,
+          `\nThank you!\n— ${tutor}`
+        ].filter(Boolean).join('\n');
+
+        document.getElementById('share-text-area').value = text;
+
+        const whatsappBtn = document.getElementById('share-whatsapp-btn');
+        const phone = student && student.parentPhone ? student.parentPhone.replace(/[^0-9]/g, '') : '';
+        whatsappBtn.href = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+        document.getElementById('modal-share').classList.add('active');
+      },
+
+      copyShareText() {
+        const textarea = document.getElementById('share-text-area');
+        textarea.select();
+        navigator.clipboard.writeText(textarea.value).then(() => {
+          Toast.show('Copied message to clipboard!');
+        }).catch(() => {
+          document.execCommand('copy');
+          Toast.show('Copied to clipboard');
+        });
+      },
+
+      populateWeekFromTemplates() {
+        const weekDays = DateUtils.getWeekDays(AppStore.state.currentWeekOffset);
+        const templates = AppStore.state.templates.filter(t => t.active);
+        let createdCount = 0;
+
+        templates.forEach(tpl => {
+          // Templates store dayOfWeek (0 = Sunday, 1 = Monday, etc.)
+          const targetDay = weekDays.find(d => {
+            const dateObj = new Date(d.dateStr + 'T00:00:00');
+            return dateObj.getDay() === tpl.dayOfWeek;
+          });
+
+          if (!targetDay) return;
+
+          // Prevent duplicate session if already scheduled at same date and start time for student
+          const exists = AppStore.state.sessions.some(s =>
+            s.studentId === tpl.studentId && s.date === targetDay.dateStr && s.startTime === tpl.startTime
+          );
+
+          if (!exists) {
+            const student = AppStore.getStudent(tpl.studentId);
+            const hourlyRate = student ? (student.hourlyRate || AppStore.state.settings.defaultHourlyRate) : 60;
+            const rate = Math.round((hourlyRate * (tpl.durationMinutes / 60)) * 100) / 100;
+
+            const [h, m] = tpl.startTime.split(':').map(Number);
+            const totalMin = (h * 60) + m + tpl.durationMinutes;
+            const endHour = String(Math.floor(totalMin / 60) % 24).padStart(2, '0');
+            const endMin = String(totalMin % 60).padStart(2, '0');
+
+            AppStore.addSession({
+              studentId: tpl.studentId,
+              date: targetDay.dateStr,
+              startTime: tpl.startTime,
+              endTime: `${endHour}:${endMin}`,
+              durationMinutes: tpl.durationMinutes,
+              subject: tpl.subject,
+              rate,
+              isFlatRate: false,
+              status: 'Scheduled',
+              topicCovered: '',
+              homeworkAssigned: '',
+              rating: 5,
+              parentFeedback: ''
+            });
+            createdCount++;
+          }
+        });
+
+        if (createdCount > 0) {
+          Toast.show(`Generated ${createdCount} sessions from recurring templates!`);
+          UIRenderer.renderAll();
+        } else {
+          Toast.show('No new template sessions to populate (all already scheduled).');
+        }
+      },
+
+      generateInvoice() {
+        const studentId = document.getElementById('invoice-student-select').value;
+        if (!studentId) {
+          Toast.show('Please select a student with unbilled completed sessions', 'error');
+          return;
+        }
+
+        const student = AppStore.getStudent(studentId);
+        const unbilled = AppStore.state.sessions.filter(s => s.studentId === studentId && s.status === 'Completed' && !s.invoiceId);
+
+        if (unbilled.length === 0) {
+          Toast.show('No unbilled completed sessions for this student', 'error');
+          return;
+        }
+
+        const totalDue = unbilled.reduce((acc, s) => acc + (s.rate || 0), 0);
+        const invoiceNum = `TF-${new Date().getFullYear()}-${String(AppStore.state.invoices.length + 1).padStart(3, '0')}`;
+        const todayStr = DateUtils.formatDate(new Date());
+
+        const newInvoice = {
+          invoiceNumber: invoiceNum,
+          studentId,
+          issueDate: todayStr,
+          dueDate: DateUtils.formatDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
+          sessionIds: unbilled.map(s => s.id),
+          subtotal: totalDue,
+          discount: 0,
+          totalDue,
+          status: 'Unpaid',
+          notes: 'Payment due within 7 days. Thank you for your partnership!'
+        };
+
+        AppStore.addInvoice(newInvoice);
+        Toast.show(`Invoice ${invoiceNum} generated!`);
+        UIRenderer.renderAll();
+        Actions.viewInvoiceModal(newInvoice.id);
+      },
+
+      viewInvoiceModal(invoiceId) {
+        const inv = AppStore.state.invoices.find(i => i.id === invoiceId);
+        if (!inv) return;
+
+        const student = AppStore.getStudent(inv.studentId);
+        const settings = AppStore.state.settings;
+        const sym = settings.currencySymbol || '$';
+        const sessions = (inv.sessionIds || []).map(id => AppStore.getSession(id)).filter(Boolean);
+
+        const container = document.getElementById('invoice-printable-content');
+        container.innerHTML = `
+          <div style="font-family: var(--font-body); color: #111111; line-height: 1.4;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #111; padding-bottom: 12px; margin-bottom: 14px;">
+              <div>
+                <h1 style="font-size: 24px; margin: 0; font-family: var(--font-display); text-transform: uppercase;">
+                  ${settings.businessName || 'TutorFrog'}
+                </h1>
+                <div style="font-size: 12px; color: #555;">Tutor: ${settings.tutorName}</div>
+                <div style="font-size: 12px; color: #555;">${settings.contactEmail} • ${settings.contactPhone}</div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-family: var(--font-mono); font-size: 18px; font-weight: 800;">INVOICE</div>
+                <div style="font-family: var(--font-mono); font-size: 13px; font-weight: 700; color: #333;">${inv.invoiceNumber}</div>
+                <div style="font-size: 11px; color: #666;">Date: ${inv.issueDate}</div>
+                <div style="font-size: 11px; color: #666;">Due: ${inv.dueDate}</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+              <div style="font-size: 11px; text-transform: uppercase; font-weight: 700; color: #777;">BILL TO:</div>
+              <div style="font-size: 15px; font-weight: 700;">${student ? student.name : 'Student'}</div>
+              <div style="font-size: 12px; color: #444;">Parent: ${student ? (student.parentName || 'Parent / Guardian') : ''}</div>
+              <div style="font-size: 12px; color: #444;">${student ? (student.parentEmail || student.parentPhone || '') : ''}</div>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px;">
+              <thead>
+                <tr style="border-bottom: 2px solid #333; background: #f0f0f0; text-align: left;">
+                  <th style="padding: 6px 8px;">Date</th>
+                  <th style="padding: 6px 8px;">Subject & Topic</th>
+                  <th style="padding: 6px 8px;">Duration</th>
+                  <th style="padding: 6px 8px; text-align: right;">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${sessions.map(s => `
+                  <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 6px 8px; font-family: var(--font-mono);">${s.date}</td>
+                    <td style="padding: 6px 8px;">
+                      <strong>${s.subject || 'Tutoring'}</strong>
+                      ${s.topicCovered ? `<div style="font-size: 11px; color: #555;">${s.topicCovered}</div>` : ''}
+                    </td>
+                    <td style="padding: 6px 8px;">${s.durationMinutes} min</td>
+                    <td style="padding: 6px 8px; text-align: right; font-family: var(--font-mono); font-weight: 700;">
+                      ${sym}${s.rate.toFixed(2)}
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 16px;">
+              <div style="width: 220px; font-size: 13px;">
+                <div style="display: flex; justify-content: space-between; padding: 4px 0; border-top: 2px solid #222; font-weight: 800; font-size: 15px;">
+                  <span>TOTAL DUE:</span>
+                  <span style="font-family: var(--font-mono);">${sym}${inv.totalDue.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="border-top: 1px dashed #aaa; padding-top: 10px; font-size: 11px; color: #444;">
+              <strong>Payment Instructions:</strong><br>
+              ${settings.paymentInstructions || 'Direct transfer. Please reference invoice number.'}
+            </div>
+          </div>
+        `;
+
+        document.getElementById('modal-invoice-view').classList.add('active');
+      },
+
+      printInvoice() {
+        window.print();
+      },
+
+      closeModal() {
+        document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
+      },
+
+      exportJSON() {
+        try {
+          const blob = new Blob([JSON.stringify(AppStore.state, null, 2)], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          const date = DateUtils.formatDate(new Date());
+          a.href = url;
+          a.download = `tutorfrog_backup_${date}.json`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          Toast.show('Backup JSON downloaded successfully!');
+        } catch (err) {
+          Toast.show('Export failed: ' + err.message, 'error');
+        }
+      },
+
+      importJSON(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const parsed = JSON.parse(event.target.result);
+            if (!parsed || !parsed.students || !Array.isArray(parsed.students)) {
+              throw new Error('Invalid TutorFrog backup format');
+            }
+            if (confirm('Restore this backup? This will replace your current workspace records.')) {
+              AppStore.state = parsed;
+              AppStore.save();
+              UIRenderer.renderAll();
+              Toast.show('Backup restored successfully!');
+            }
+          } catch (err) {
+            Toast.show('Restore failed: ' + err.message, 'error');
+          }
+        };
+        reader.readAsText(file);
+      },
+
+      exportCSVSessions() {
+        try {
+          const sessions = AppStore.state.sessions;
+          if (sessions.length === 0) {
+            Toast.show('No sessions to export', 'error');
+            return;
+          }
+          const headers = ['SessionID', 'Date', 'StartTime', 'EndTime', 'DurationMin', 'StudentID', 'StudentName', 'Subject', 'Fee', 'Status', 'TopicCovered', 'Homework', 'Rating'];
+          const rows = sessions.map(s => {
+            const student = AppStore.getStudent(s.studentId);
+            return [
+              s.id,
+              s.date,
+              s.startTime,
+              s.endTime,
+              s.durationMinutes,
+              s.studentId,
+              `"${(student ? student.name : '').replace(/"/g, '""')}"`,
+              `"${(s.subject || '').replace(/"/g, '""')}"`,
+              s.rate,
+              s.status,
+              `"${(s.topicCovered || '').replace(/"/g, '""')}"`,
+              `"${(s.homeworkAssigned || '').replace(/"/g, '""')}"`,
+              s.rating || 5
+            ].join(',');
+          });
+
+          const csvContent = [headers.join(','), ...rows].join('\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `tutorfrog_sessions_${DateUtils.formatDate(new Date())}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          Toast.show('Sessions exported to CSV!');
+        } catch (err) {
+          Toast.show('CSV export failed', 'error');
+        }
+      },
+
+      exportCSVStudents() {
+        try {
+          const students = AppStore.state.students;
+          if (students.length === 0) {
+            Toast.show('No students to export', 'error');
+            return;
+          }
+          const headers = ['StudentID', 'Name', 'Status', 'Grade', 'School', 'Curriculum', 'Rate', 'Subjects', 'TargetGoal', 'ParentName', 'ParentPhone', 'ParentEmail', 'PreferredContact'];
+          const rows = students.map(s => [
+            s.id,
+            `"${s.name.replace(/"/g, '""')}"`,
+            s.status,
+            `"${(s.grade || '').replace(/"/g, '""')}"`,
+            `"${(s.school || '').replace(/"/g, '""')}"`,
+            `"${(s.curriculum || '').replace(/"/g, '""')}"`,
+            s.hourlyRate || 60,
+            `"${(s.subjects || []).join('; ').replace(/"/g, '""')}"`,
+            `"${(s.targetGoal || '').replace(/"/g, '""')}"`,
+            `"${(s.parentName || '').replace(/"/g, '""')}"`,
+            `"${(s.parentPhone || '').replace(/"/g, '""')}"`,
+            `"${(s.parentEmail || '').replace(/"/g, '""')}"`,
+            s.preferredContact || 'WhatsApp'
+          ].join(','));
+
+          const csvContent = [headers.join(','), ...rows].join('\n');
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `tutorfrog_students_${DateUtils.formatDate(new Date())}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+          Toast.show('Students exported to CSV!');
+        } catch (err) {
+          Toast.show('CSV export failed', 'error');
+        }
+      },
+
+      wipeAllData() {
+        if (confirm('CAUTION: Are you sure you want to wipe all records? Make sure you have exported a JSON backup first.')) {
+          StorageService.clear();
+          AppStore.state = {
+            settings: {
+              tutorName: 'Private Tutor',
+              businessName: 'TutorFrog Command',
+              contactEmail: '',
+              contactPhone: '',
+              currencySymbol: '$',
+              defaultHourlyRate: 60,
+              defaultDurationMinutes: 60,
+              paymentInstructions: ''
+            },
+            students: [],
+            templates: [],
+            sessions: [],
+            invoices: [],
+            currentWeekOffset: 0,
+            currentDaySelected: 0
+          };
+          AppStore.save();
+          UIRenderer.renderAll();
+          Toast.show('All workspace data wiped clean.');
+        }
+      },
+
+      toggleDemoData() {
+        if (confirm('Load preloaded realistic demo dataset? (Overwrites current workspace state)')) {
+          AppStore.state = DemoData.get();
+          AppStore.save();
+          UIRenderer.renderAll();
+          Toast.show('Loaded Demo Data!');
+        }
+      }
+    };
+
+    /* ==========================================================================
+       8. APPLICATION BOOTSTRAP & EVENT DELEGATION
+       ========================================================================== */
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Initialize State Store
+      AppStore.init();
+      UIRenderer.renderAll();
+
+      // 2. Navigation Tab Switching
+      document.querySelectorAll('.app-nav .nav-item').forEach(button => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.app-nav .nav-item').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.app-main .app-view').forEach(v => v.classList.remove('active'));
+
+          button.classList.add('active');
+          const tabId = button.dataset.tab;
+          const targetView = document.getElementById(`view-${tabId}`);
+          if (targetView) targetView.classList.add('active');
+        });
+      });
+
+      // 3. Central Event Delegation Listener
+      document.body.addEventListener('click', (e) => {
+        const actionTarget = e.target.closest('[data-action]');
+        if (!actionTarget) return;
+
+        const action = actionTarget.dataset.action;
+        const id = actionTarget.dataset.id;
+
+        switch (action) {
+          case 'open-student-modal':
+            Actions.openStudentModal();
+            break;
+          case 'edit-student':
+            Actions.openStudentModal(id);
+            break;
+          case 'open-session-modal':
+            const prefillDate = actionTarget.dataset.date || null;
+            const prefillStudentId = actionTarget.dataset.studentId || null;
+            Actions.openSessionModal(prefillDate, prefillStudentId);
+            break;
+          case 'edit-session':
+            Actions.openSessionModal(null, null, id);
+            break;
+          case 'quick-complete':
+            Actions.quickCompleteSession(id);
+            break;
+          case 'open-notes':
+            Actions.openNotesModal(id);
+            break;
+          case 'quick-share':
+            Actions.quickShareSession(id);
+            break;
+          case 'quick-share-notes':
+            const currentSesId = document.getElementById('notes-session-id').value;
+            Actions.quickShareSession(currentSesId);
+            break;
+          case 'copy-share-text':
+            Actions.copyShareText();
+            break;
+          case 'populate-week':
+            Actions.populateWeekFromTemplates();
+            break;
+          case 'prev-week':
+            AppStore.state.currentWeekOffset--;
+            UIRenderer.renderSchedule();
+            break;
+          case 'next-week':
+            AppStore.state.currentWeekOffset++;
+            UIRenderer.renderSchedule();
+            break;
+          case 'today-week':
+            AppStore.state.currentWeekOffset = 0;
+            UIRenderer.renderSchedule();
+            break;
+          case 'select-day':
+            AppStore.state.currentDaySelected = parseInt(actionTarget.dataset.index, 10);
+            UIRenderer.renderSchedule();
+            break;
+          case 'generate-invoice':
+            Actions.generateInvoice();
+            break;
+          case 'view-invoice-modal':
+            Actions.viewInvoiceModal(id);
+            break;
+          case 'print-invoice':
+            Actions.printInvoice();
+            break;
+          case 'toggle-invoice-paid':
+            AppStore.toggleInvoiceStatus(id);
+            Toast.show('Invoice payment status updated');
+            UIRenderer.renderAll();
+            break;
+          case 'goto-invoices':
+            document.querySelector('.nav-item[data-tab="invoices"]').click();
+            break;
+          case 'close-modal':
+            Actions.closeModal();
+            break;
+          case 'export-json':
+            Actions.exportJSON();
+            break;
+          case 'export-csv-sessions':
+            Actions.exportCSVSessions();
+            break;
+          case 'export-csv-students':
+            Actions.exportCSVStudents();
+            break;
+          case 'wipe-data':
+            Actions.wipeAllData();
+            break;
+          case 'toggle-demo':
+            Actions.toggleDemoData();
+            break;
+        }
+      });
+
+      // 4. Form Submit Listeners
+      document.getElementById('form-student').addEventListener('submit', Actions.saveStudent);
+      document.getElementById('form-session').addEventListener('submit', Actions.saveSession);
+      document.getElementById('form-notes').addEventListener('submit', Actions.saveNotes);
+
+      document.getElementById('settings-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        AppStore.state.settings.tutorName = document.getElementById('setting-tutor-name').value.trim();
+        AppStore.state.settings.businessName = document.getElementById('setting-business-name').value.trim();
+        AppStore.state.settings.contactEmail = document.getElementById('setting-email').value.trim();
+        AppStore.state.settings.contactPhone = document.getElementById('setting-phone').value.trim();
+        AppStore.state.settings.currencySymbol = document.getElementById('setting-currency').value.trim() || '$';
+        AppStore.state.settings.defaultHourlyRate = parseFloat(document.getElementById('setting-default-rate').value) || 60;
+        AppStore.state.settings.paymentInstructions = document.getElementById('setting-payment-instructions').value.trim();
+        AppStore.save();
+        UIRenderer.renderAll();
+        Toast.show('Settings saved successfully!');
+      });
+
+      // 5. Search & Filter Input Listeners
+      document.getElementById('students-search').addEventListener('input', () => UIRenderer.renderStudents());
+      document.getElementById('students-status-filter').addEventListener('change', () => UIRenderer.renderStudents());
+
+      // 6. Backup File Upload Listener
+      document.getElementById('input-import-json').addEventListener('change', Actions.importJSON);
+
+      // 7. Modal Keyboard Navigation (Escape key closes active modals)
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          Actions.closeModal();
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
